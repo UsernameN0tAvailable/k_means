@@ -27,7 +27,10 @@ void TrainSample::splitAndSave(std::string &valueString) {
     splitAndSave(valuesString);
 }
 
+
+void TrainSample::pushDistance(float distance) {
+     distancesToCenters.emplace_back(distance);
+ }
+
 std::vector<uint8_t>* TrainSample::getValues(){ return &values;}
-
-
 int TrainSample::getSampleSize() { return values.size(); }

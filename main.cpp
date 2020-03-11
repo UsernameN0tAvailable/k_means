@@ -37,10 +37,14 @@ int main() {
     std::vector<ClusterCenter> clusterCent;
     clusterCent.reserve(k);
     for(uint8_t i = 0; i < k; i++)
-        clusterCent.emplace_back(sampleSize, 254, samples);
+        clusterCent.emplace_back(sampleSize, 254, samples, i);
 
-    for(auto it = samples->begin(); it != samples->end(); ++it){
 
+    for(ClusterCenter clusterCenter : clusterCent){
+        clusterCenter.reposition(); // compute distances
+        // TODO: compute minima for train samples
+        // TODO: reposition cluster centers
+        // TODO: recompute centers
     }
 
     std::cout << "done" << std::endl;
