@@ -20,17 +20,26 @@ void TrainSample::splitAndSave(std::string &valueString) {
         values.emplace_back((uint8_t) std::stoi(item));
 }
 
-/*
- * construct normal train sample
- */
- TrainSample::TrainSample(std::string &valuesString){
+
+TrainSample::TrainSample(std::string &valuesString)
+: distancesChecked(0), smallestDistance(10000000000000.0) // huge impossible value
+{
     splitAndSave(valuesString);
 }
 
 
-void TrainSample::pushDistance(float distance) {
-     distancesToCenters.emplace_back(distance);
- }
 
-std::vector<uint8_t>* TrainSample::getValues(){ return &values;}
+void TrainSample::checkDistanceForMin(float distance) {
+    if(smallestDistance > distance){
+        smallestDistance = distance;
+        closestClusterIndex = distancesChecked;
+    }
+    distancesChecked++;
+}
+
+std::vector<uint8_t> *TrainSample::getValues() { return &values; }
+
 int TrainSample::getSampleSize() { return values.size(); }
+
+uint8_t TrainSample::getClosestCenterId(){return closestClusterIndex;}
+
