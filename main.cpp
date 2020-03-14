@@ -4,7 +4,15 @@
 #include "TrainSample.cpp"
 #include "ClusterCenter.cpp"
 
-float biggestDistanceDelta(std::vector<ClusterCenter>& clusterCenters){
+
+void resetSamplesAttributes(std::vector<TrainSample>* samples) {
+
+    for(auto sampleIterator = samples->begin(); sampleIterator != samples->end(); ++sampleIterator)
+        sampleIterator->resetAttributes();
+
+}
+
+float biggestRepDelta(std::vector<ClusterCenter>& clusterCenters){
 
 
     float max = 0;
@@ -28,23 +36,26 @@ void repositionCenters(std::vector<ClusterCenter> *clusterCenters, std::vector<T
 
         float nearestSamplesCount = 0;
 
-        std::vector<float> meanPosition(sampleSize, 0);
+       std::vector<float> meanPosition (sampleSize, 0.0);
+
 
         for(auto trainSampleIterator = trainSamples->begin(); trainSampleIterator != trainSamples->end(); ++ trainSampleIterator){
+
             if(trainSampleIterator->getClosestCenterId() == clusterIndex) {
+
                 nearestSamplesCount++;
                 std::vector<uint8_t> *sampleValues = trainSampleIterator->getValues();
                 // sum
-                for(int valuesIndex = 0; valuesIndex < sampleValues->size(); valuesIndex++){
-                    meanPosition[valuesIndex] += (float)sampleValues->at(0);
-                }
+                for(int valuesIndex = 0; valuesIndex < sampleValues->size(); valuesIndex++)
+                    meanPosition[valuesIndex] +=  (float)sampleValues->at(valuesIndex);
+
             }
-
-            // compute mean values
-            for(int index = 0; index < meanPosition.size(); index++)
-                meanPosition[index] = meanPosition[index]/nearestSamplesCount;
-
         }
+
+        // compute mean values
+        for(int index = 0; index < meanPosition.size(); index++)
+            meanPosition[index] = meanPosition[index] / nearestSamplesCount;
+
         clusterIterator->reposition(meanPosition);
         clusterIndex++;
     }
@@ -69,7 +80,7 @@ std::vector<TrainSample> *readAndLoadSamples(std::string &filePath) {
 
 int main() {
 
-    const uint8_t k = 3;
+    const uint8_t k = 7;
 
     // read and load train samples
     std::string filePath = "/home/myself/CLionProjects/k_means/train.csv";
@@ -83,17 +94,22 @@ int main() {
     for (uint8_t i = 0; i < k; i++)
         clusterCenters.emplace_back(sampleSize, 254, samples, i);
 
-    std::cout << "start" << std::endl;
+    int replacements = 0;
 
-    while(biggestDistanceDelta(clusterCenters) > 1) {
-
+    do{
         for (ClusterCenter clusterCenter : clusterCenters)
             clusterCenter.computeDistances(); // compute distances
 
         repositionCenters(&clusterCenters, samples);
-    }
+        resetSamplesAttributes(samples);
 
-    std::cout << "done" << std::endl;
+        replacements++;
+
+    }while(biggestRepDelta(clusterCenters) > 1);
+
+    std::cout << "done, iterations needed : " << replacements << std::endl;
+
+
     delete (samples);
     return 0;
 }

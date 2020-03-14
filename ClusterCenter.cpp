@@ -41,15 +41,11 @@ void ClusterCenter::reposition(std::vector<float> newValues) {
 
 
 void ClusterCenter::distance(std::vector<float>* firstVector, std::vector<float>* secondVector){
-
     float sum = 0;
     for(int index = 0; index < firstVector->size(); index++) {
         float diff =  (firstVector->at(index) - secondVector->at(index));
-        sum = (diff * diff);
+        sum += (diff * diff);
     }
-
-    std::cout << "sum : " <<  sum << std::endl;
-
     repositionDelta = sqrt(sum);
 }
 

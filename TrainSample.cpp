@@ -37,6 +37,11 @@ void TrainSample::checkDistanceForMin(float distance) {
     distancesChecked++;
 }
 
+void TrainSample::resetAttributes(){
+    smallestDistance = 10000000000000.0;
+    distancesChecked = 0;
+}
+
 std::vector<uint8_t> *TrainSample::getValues() { return &values; }
 
 int TrainSample::getSampleSize() { return values.size(); }

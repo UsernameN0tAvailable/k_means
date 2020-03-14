@@ -21,4 +21,6 @@ public:
 
     int getSampleSize();
     uint8_t getClosestCenterId();
+
+    void resetAttributes();
 };
