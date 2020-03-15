@@ -8,3 +8,7 @@ CMakeLists.txt
 
 cmake-build-debug
 cmake-build-release
+
+a.out
+
+output

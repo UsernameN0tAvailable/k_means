@@ -4,7 +4,7 @@ class ClusterCenter {
 
 private:
     uint8_t id;
-    std::vector<float> values; // because max value is 254
+    std::vector<float>* values;
     std::vector<TrainSample>* trainSamples;
     float repositionDelta;
 
@@ -21,8 +21,9 @@ public:
 
     void computeDistances();
 
-    void reposition(std::vector<float> newValues);
+    void reposition(std::vector<float>* newValues);
 
     float getLastRepDelta();
+    uint8_t getId();
 
 };
