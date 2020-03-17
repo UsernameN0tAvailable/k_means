@@ -3,6 +3,7 @@
 #include <fstream>
 #include "TrainSample.cpp"
 #include "ClusterCenter.cpp"
+#include "ClusterAnalysis.cpp"
 
 void resetSamplesAttributes(std::vector<TrainSample>* samples) {
 
@@ -65,17 +66,17 @@ std::vector<TrainSample> *readAndLoadSamples(std::string &filePath) {
     if (myFile.is_open())
         while (getline(myFile, line))
             samples->emplace_back(line);
-    else
+    else {
         std::cout << "failed to open" << std::endl;
+        exit(0);
+    }
 
     return samples;
 }
 
 int main() {
 
-
-    const uint8_t k = 15;
-
+    const uint8_t k = 3;
     // read and load train samples
     std::string filePath = "/home/myself/CLionProjects/k_means/train.csv";
     std::vector<TrainSample> *samples = readAndLoadSamples(filePath);
@@ -90,23 +91,26 @@ int main() {
 
     int replacements = 0;
 
+    std::cout << "clustering ..." << std::endl;
+
     do{
         for (ClusterCenter clusterCenter : clusterCenters)
             clusterCenter.computeDistances(); // compute distances
 
         repositionCenters(&clusterCenters, samples);
         resetSamplesAttributes(samples);
-
         replacements++;
 
     }while(biggestRepDelta(clusterCenters) > 1);
 
-    std::cout << "done, iterations needed : " << replacements << std::endl;
+    std::cout << "needed iterations: " << replacements << "\ncluster quality analysis ..." << std::endl;
+
+
+    using namespace ClusterAnalysis;
+    cIndex(samples);
 
 
     delete (samples);
-
-
     return 0;
 }
 

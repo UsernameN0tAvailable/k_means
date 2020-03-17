@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include "math.h"
 #include "TrainSample.h"
 
 
@@ -22,7 +23,7 @@ void TrainSample::splitAndLoad(std::string &valueString) {
 
 
 TrainSample::TrainSample(std::string &valuesString)
-: distancesChecked(0), smallestDistance(10000000000000.0) // huge impossible value
+: distancesChecked(0), smallestDistance(MAXFLOAT) // huge impossible value
 {
     splitAndLoad(valuesString);
 }

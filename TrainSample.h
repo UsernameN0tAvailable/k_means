@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRAIN_SAMPLE
+#define TRAIN_SAMPLE
 
 class TrainSample {
 
@@ -23,3 +24,5 @@ public:
 
     void resetAttributes();
 };
+
+#endif

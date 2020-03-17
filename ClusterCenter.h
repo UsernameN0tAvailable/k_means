@@ -1,4 +1,5 @@
-#include "TrainSample.h"
+#ifndef CLUSTER_CENTER
+#define CLUSTER_CENTER
 
 class ClusterCenter {
 
@@ -27,3 +28,5 @@ public:
     uint8_t getId();
 
 };
+
+#endif

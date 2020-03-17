@@ -8,7 +8,7 @@
  */
 
 ClusterCenter::ClusterCenter(int size, int maxValue, std::vector<TrainSample>* trainSamples, uint8_t id)
-:trainSamples(trainSamples), id(id), repositionDelta(10000000000.0) // huge value
+:trainSamples(trainSamples), id(id), repositionDelta(MAXFLOAT) // huge value
 {
     values = new std::vector<float>;
     values->reserve(size);
@@ -33,9 +33,9 @@ void ClusterCenter::computeDistances() {
 
 
 void ClusterCenter::reposition(std::vector<float>* newValues) {
-    distance(values, newValues);
-    delete(values);
-    values = newValues;
+    distance(values, newValues); // compute repositioning distance
+    delete(values); // delete old position from memory
+    values = newValues; // reassign new position
 }
 
 
