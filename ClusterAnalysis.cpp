@@ -144,6 +144,12 @@ namespace ClusterAnalysis {
         }
 
         /**
+         * This is my interpretation of
+         * page 26 of the third lecture slides
+         *
+         * this needs a lot of computational
+         * power so I did NOT use id
+         *
          * computes smallest cluster distance
          * @param clusters
          * @return smallest cluster distance
@@ -159,14 +165,19 @@ namespace ClusterAnalysis {
             return min(&distances);
         }
 
+        /**
+         * This is the more sensible interpretation
+         * of cluster distance
+         *
+         * @param clusters all clusters
+         * @return smallest cluster distance
+         */
         float minClusterDistance(std::vector<ClusterCenter> *clusters) {
             std::vector<float> distances;
 
             for(int i = 0; i < clusters->size(); i++)
                 for(int j = i + 1; j < clusters->size(); j++)
                     distances.push_back(distance(clusters->at(i).getValues(), clusters->at(j).getValues()));
-
-
 
             return min(&distances);
         }
