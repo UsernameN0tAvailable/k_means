@@ -110,7 +110,7 @@ namespace ClusterAnalysis {
 
         float analyze(std::vector<TrainSample> *trainSamples, uint8_t k) {
 
-            std::vector<std::vector<TrainSample>*> *clusteredSamples = splitSamples(trainSamples, k);
+            std::vector<std::vector<TrainSample> *> *clusteredSamples = splitSamples(trainSamples, k);
 
             float maxDiameter = minDiameter(clusteredSamples),
                     minClusterDis = minClusterDistance(clusteredSamples);
@@ -121,71 +121,111 @@ namespace ClusterAnalysis {
     }
 
 
-    namespace davisBouldinIndex{
+    namespace davisBouldinIndex {
 
-        void sumVector(std::vector<float>* sum, std::vector<float>* vector){
+        void sumVector(std::vector<float> *sum, std::vector<float> *vector) {
 
-            for(int i = 0; i < sum->size(); i++){
+            for (int i = 0; i < sum->size(); i++) {
                 (*sum)[i] += vector->at(i);
             }
         }
 
 
-        std::vector<float>* sumVectors(std::vector<TrainSample*>* samples){
+        std::vector<float> *sumVectors(std::vector<TrainSample> *samples) {
 
-            auto* sum = new std::vector<float>(samples->at(0)->getValues()->size(), 10);
+            auto *sum = new std::vector<float>(785, 0);
 
-            for(TrainSample* sample : *samples)
-                sumVector(sum, sample->getValues());
+            for (TrainSample sample : *samples)
+                sumVector(sum, sample.getValues());
 
             return sum;
         }
 
 
-        float vectorLength(std::vector<float>* vector){
+        float vectorLength(std::vector<float> *vector) {
 
             float sum = 0;
-            for(float entry : *vector )
-                sum += entry;
+            for (float entry : *vector)
+                sum += (entry * entry);
+
+
+
 
             return sqrt(sum);
         }
 
-        void vectorDivide(std::vector<float>* vector, float length){
-            for(int i = 0; i < vector->size(); i++)
+        void vectorDivide(std::vector<float> *vector, float length) {
+            for (int i = 0; i < vector->size(); i++)
                 (*vector)[i] /= length;
-
         }
 
 
-        std::vector<float>* m_i(std::vector<TrainSample*>* samples, ClusterCenter* center){
+        std::vector<float> *m(std::vector<TrainSample> *samples, float centerSize) {
 
-            if(samples->at(0)->getClosestCenterId() == center->getId())
-                std::cout << "correct!!" << std::endl;
-
-            float length = vectorLength(center->getValues());
-            std::vector<float>* output = sumVectors(samples);
-            vectorDivide(output, length);
+            std::vector<float> *output = sumVectors(samples);
+            vectorDivide(output, centerSize);
 
             return output;
         }
 
-        float d_i(){
-            // TODO: compute vector length here!!! not in m_i
+        float d(std::vector<TrainSample> *samples, float centerSize, std::vector<float> *m) {
+                    float output = 0;
 
+            for (TrainSample sample : *samples)
+                output += distance(sample.getValues(), m);
+
+
+            return output / centerSize;
         }
 
-        float analyze(std::vector<TrainSample>* trainSamples, std::vector<ClusterCenter>* centers){
+        float
+        R_i_j(std::vector<TrainSample> *samples_i, std::vector<TrainSample> *samples_j, ClusterCenter *center_i,
+              ClusterCenter *center_j) {
+
+            float centerSize_i = vectorLength(center_i->getValues()),
+             centerSize_j = vectorLength(center_j->getValues());
+
+
+            std::vector<float>* m_i = m(samples_i, centerSize_i),
+                    *m_j = m(samples_j, centerSize_j);
+
+            float d_i = d(samples_i, centerSize_i, m_i),
+                    d_j = d(samples_j, centerSize_j, m_j),
+                    dist_m_i_m_j = (distance(m_i, m_j));
+
+            return (d_i + d_j)/dist_m_i_m_j;
+        }
+
+        float R_i(std::vector<std::vector<TrainSample>*> *clusteredSamples, std::vector<ClusterCenter> *centers, int i){
+
+            std::vector<float> rs;
+
+                for(int j = 0; j < clusteredSamples->size(); j++)
+                    if(i != j){
+                        rs.push_back(R_i_j(
+                                clusteredSamples->at(i),
+                                clusteredSamples->at(j),
+                                &(centers->at(i)),
+                                &(centers->at(j))
+                                ));
+                    }
+
+            return max(&rs);
+        }
+
+        float analyze(std::vector<TrainSample> *trainSamples, std::vector<ClusterCenter> *centers) {
 
             std::vector<std::vector<TrainSample>*> *clusteredSamples = splitSamples(trainSamples, centers->size());
 
+            float sum = 0;
+
+            for(int i = 0; i < clusteredSamples->size(); i++)
+                sum += R_i(clusteredSamples, centers, i);
 
 
-
-            delete(clusteredSamples);
-            return 0.0;
+            delete (clusteredSamples);
+            return sum/centers->size();
         }
-
     }
 }
 
