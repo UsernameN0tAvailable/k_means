@@ -23,7 +23,7 @@ void TrainSample::splitAndLoad(std::string &valueString) {
 
 
 TrainSample::TrainSample(std::string &valuesString)
-: distancesChecked(0), smallestDistance(MAXFLOAT) // huge impossible value
+: distancesChecked(0), smallestDistance(MAXFLOAT), closestClusterIndex(0) // huge impossible value
 {
     splitAndLoad(valuesString);
 }

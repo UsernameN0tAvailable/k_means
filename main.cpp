@@ -76,7 +76,7 @@ std::vector<TrainSample> *readAndLoadSamples(std::string &filePath) {
 
 int main() {
 
-    const uint8_t k = 3;
+    const uint8_t k = 5;
     // read and load train samples
     std::string filePath = "/home/myself/CLionProjects/k_means/train.csv";
     std::vector<TrainSample> *samples = readAndLoadSamples(filePath);
@@ -107,8 +107,9 @@ int main() {
 
 
     using namespace ClusterAnalysis;
-    cIndex(samples);
+    float dunnIndex = dunnIndex::analyze(samples, k);
 
+    std::cout << "dunnIndex : " << dunnIndex << std::endl;
 
     delete (samples);
     return 0;

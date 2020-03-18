@@ -51,6 +51,7 @@ void ClusterCenter::distance(std::vector<float>* firstVector, std::vector<float>
 
 float ClusterCenter::getLastRepDelta() { return repositionDelta; }
 uint8_t ClusterCenter::getId() { return id; }
+std::vector<float>* ClusterCenter::getValues() { return values;}
 
 
 

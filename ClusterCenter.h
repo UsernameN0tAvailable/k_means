@@ -26,6 +26,7 @@ public:
 
     float getLastRepDelta();
     uint8_t getId();
+    std::vector<float>* getValues();
 
 };
 

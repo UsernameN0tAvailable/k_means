@@ -5,8 +5,6 @@
 #include "math.h"
 
 
-
-
 namespace ClusterAnalysis {
 
     float distance(std::vector<float> *firstVector, std::vector<float> *secondVector) {
@@ -21,101 +19,173 @@ namespace ClusterAnalysis {
         return sqrt(sum);
     }
 
-    std::vector<float> *gammaAndAlpha(std::vector<TrainSample> *trainSamples, std::vector<float>* distances) {
+    std::vector<std::vector<TrainSample> *> *splitSamples(std::vector<TrainSample> *trainSamples, uint8_t k) {
 
-        float gamma = 0,
-                alpha = 0;
+        auto *clusteredSamples = new std::vector<std::vector<TrainSample> *>;
+        clusteredSamples->reserve(k);
 
-        for (int i = 0; i < trainSamples->size() - 1; i++) {
-            for (int j = i + 1; j < trainSamples->size(); j++) {
-
-                TrainSample sampleI = trainSamples->at(i),
-                        sampleJ = trainSamples->at(j);
-
-                if (sampleI.getClosestCenterId() == sampleJ.getClosestCenterId()) {
-                    alpha++;
-                    float dist = distance(sampleI.getValues(), sampleJ.getValues());
-                    distances->push_back(dist);
-                    gamma += dist;
-                }
-            }
+        for (int i = 0; i < k; i++) {
+            auto *tmp = new std::vector<TrainSample>;
+            clusteredSamples->push_back(tmp);
         }
 
-        auto *output = new std::vector<float>{alpha, gamma};
-        return output;
+
+        for (int i = 0; i < trainSamples->size(); i++)
+            (*clusteredSamples)[trainSamples->at(i).getClosestCenterId()]->push_back(trainSamples->at(i));
+
+        return clusteredSamples;
     }
 
 
+    float max(std::vector<float> *distances) {
 
-    float computeMin(std::vector<float>* distances, float alpha){
+        float max = -100;
 
-        std::vector<float> distancesTemp = (*distances);
+        for (float dist : *distances)
+            if (dist > max)
+                max = dist;
 
-        float output = 0;
-        int alphaI = (int)alpha;
+        return max;
+    }
 
-        for(int j = 0; j < alphaI && j < distancesTemp.size(); j++) {
-            int minIndex = 0;
-            float min = MAXFLOAT;
+    float min(std::vector<float> *distances) {
 
+        float min = MAXFLOAT;
 
-            for (int i = 0; i < distancesTemp.size(); i++) {
-                if (distancesTemp[i] < min) {
-                    min = distancesTemp[i];
-                    minIndex = i;
-                }
-            }
-            output += min;
-            distancesTemp[minIndex] = MAXFLOAT;
-        }
+        for (float dist : *distances)
+            if (dist < min)
+                min = dist;
 
-        return output;
+        return min;
     }
 
 
-    float computeMax(std::vector<float>* distances, float alpha){
+    namespace dunnIndex {
 
-        std::vector<float> distancesTemp = (*distances);
+        float computeDiameter(std::vector<TrainSample> *samples) {
 
-        float output = 0;
-        int alphaI = (int)alpha;
+            std::vector<float> distances;
 
-        for(int j = 0; j < alphaI && j < distancesTemp.size(); j++) {
-            int maxIndex = 0;
-            float max = -100;
+            for (int i = 0; i < samples->size() - 1; i++)
+                for (int j = i + 1; j < samples->size(); j++)
+                    distances.push_back(distance(samples->at(i).getValues(), samples->at(j).getValues()));
 
-
-            for (int i = 0; i < distancesTemp.size(); i++) {
-                if (distancesTemp[i] > max) {
-                    max = distancesTemp[i];
-                    maxIndex = i;
-                }
-            }
-            output += max;
-            distancesTemp[maxIndex] = -100;
+            return max(&distances);
         }
 
-        return output;
+        float minDiameter(std::vector<std::vector<TrainSample> *> *clusteredSamples) {
+            std::vector<float> diameters;
+            diameters.reserve(clusteredSamples->size());
+
+            for (auto list : *clusteredSamples)
+                diameters.push_back(computeDiameter(list));
+
+            return min(&diameters);
+        }
+
+
+        float clusterDistance(std::vector<TrainSample> *firstCluster, std::vector<TrainSample> *secondCluster) {
+
+            std::vector<float> distances;
+            distances.reserve(firstCluster->size() * secondCluster->size());
+
+            for (auto firstSample : *firstCluster)
+                for (auto secondSample : *secondCluster)
+                    distances.push_back(distance(firstSample.getValues(), secondSample.getValues()));
+
+            return min(&distances);
+        }
+
+        float minClusterDistance(std::vector<std::vector<TrainSample> *> *clusters) {
+
+            std::vector<float> distances;
+            distances.reserve(clusters->size());
+
+            for (int i = 0; i < clusters->size(); i++)
+                for (int j = i + 1; j < clusters->size(); j++)
+                    distances.push_back(clusterDistance((clusters->at(i)), (clusters->at(j))));
+
+            return min(&distances);
+        }
+
+        float analyze(std::vector<TrainSample> *trainSamples, uint8_t k) {
+
+            std::vector<std::vector<TrainSample>*> *clusteredSamples = splitSamples(trainSamples, k);
+
+            float maxDiameter = minDiameter(clusteredSamples),
+                    minClusterDis = minClusterDistance(clusteredSamples);
+
+            delete (clusteredSamples);
+            return minClusterDis / maxDiameter;
+        }
     }
 
 
+    namespace davisBouldinIndex{
 
-    void cIndex( std::vector<TrainSample> *trainSamples) {
+        void sumVector(std::vector<float>* sum, std::vector<float>* vector){
 
-        auto* distances = new std::vector<float>;
+            for(int i = 0; i < sum->size(); i++){
+                (*sum)[i] += vector->at(i);
+            }
+        }
 
-        std::vector<float> *gammaAlpha = gammaAndAlpha(trainSamples, distances);
 
-        float alpha = gammaAlpha->at(0),
-                gamma = gammaAlpha->at(1),
-                min = computeMin(distances, alpha),
-                max = computeMax(distances, alpha),
-                c_index = (gamma - min)/(max - min);
+        std::vector<float>* sumVectors(std::vector<TrainSample*>* samples){
 
-        std::cout << "c-Index : " << c_index << std::endl;
+            auto* sum = new std::vector<float>(samples->at(0)->getValues()->size(), 10);
 
-        delete(distances);
-        delete(gammaAlpha);
+            for(TrainSample* sample : *samples)
+                sumVector(sum, sample->getValues());
+
+            return sum;
+        }
+
+
+        float vectorLength(std::vector<float>* vector){
+
+            float sum = 0;
+            for(float entry : *vector )
+                sum += entry;
+
+            return sqrt(sum);
+        }
+
+        void vectorDivide(std::vector<float>* vector, float length){
+            for(int i = 0; i < vector->size(); i++)
+                (*vector)[i] /= length;
+
+        }
+
+
+        std::vector<float>* m_i(std::vector<TrainSample*>* samples, ClusterCenter* center){
+
+            if(samples->at(0)->getClosestCenterId() == center->getId())
+                std::cout << "correct!!" << std::endl;
+
+            float length = vectorLength(center->getValues());
+            std::vector<float>* output = sumVectors(samples);
+            vectorDivide(output, length);
+
+            return output;
+        }
+
+        float d_i(){
+            // TODO: compute vector length here!!! not in m_i
+
+        }
+
+        float analyze(std::vector<TrainSample>* trainSamples, std::vector<ClusterCenter>* centers){
+
+            std::vector<std::vector<TrainSample>*> *clusteredSamples = splitSamples(trainSamples, centers->size());
+
+
+
+
+            delete(clusteredSamples);
+            return 0.0;
+        }
+
     }
 }
 
