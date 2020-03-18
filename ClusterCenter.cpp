@@ -33,13 +33,13 @@ void ClusterCenter::computeDistances() {
 
 
 void ClusterCenter::reposition(std::vector<float>* newValues) {
-    distance(values, newValues); // compute repositioning distance
+    computeRepositionDelta(values, newValues); // compute repositioning computeRepositionDelta
     delete(values); // delete old position from memory
     values = newValues; // reassign new position
 }
 
 
-void ClusterCenter::distance(std::vector<float>* firstVector, std::vector<float>* secondVector){
+void ClusterCenter::computeRepositionDelta(std::vector<float>* firstVector, std::vector<float>* secondVector){
     float sum = 0;
     for(int index = 0; index < firstVector->size(); index++) {
         float diff =  (firstVector->at(index) - secondVector->at(index));

@@ -1,9 +1,36 @@
+/**
+ * Author: Mattia Pedrazzi 14-727-622
+ *
+ *
+ * How to use:
+ *
+ * 1) compile:
+ * g++ main.cpp -o output -O3
+ *
+ * 2) execute
+ * ./output <absolute file path of training set csv> <number of clusters>
+ *
+ * 3) example
+ * ./output /home/myself/train.csv 3
+ *
+ *
+ * ==================================================================
+ *
+ * The documentation is in the header files.
+ * The documentation for the cluster analysis algorithms
+ * is located inside of ClusterAnalysis.cpp
+ *
+ *
+ */
+
+
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include "TrainSample.cpp"
 #include "ClusterCenter.cpp"
 #include "ClusterAnalysis.cpp"
+
 
 /**
  * resets the training samples attributes
@@ -140,13 +167,13 @@ int main(int argc, char* argv[]) {
 
     using namespace ClusterAnalysis;
     float dunnIndex = dunnIndex::analyze(samples, k);
-    float DB = davisBouldinIndex::analyze(samples, &clusterCenters);
+    //float DB = davisBouldinIndex::analyze(samples, &clusterCenters);
 
     std::cout << "k : " << k << std::endl;
     std::cout << "stop criterion, minimum reposition delta of : " << (unsigned)repositionDeltaLimit << std::endl;
     std::cout << "total cluster center replacements : " << replacements << std::endl;
     std::cout << "Dunn Index : " << dunnIndex << std::endl;
-    std::cout <<  "Davis-Boulden Index : " << DB << std::endl;
+    //std::cout <<  "Davis-Boulden Index : " << DB << std::endl;
 
     delete (samples);
     return 0;
