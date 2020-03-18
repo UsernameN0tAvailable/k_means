@@ -20,6 +20,18 @@
  * The documentation for the cluster analysis algorithms
  * is located inside of ClusterAnalysis.cpp
  *
+ * ==================================================================
+ *
+ * NOTE:
+ *
+ * I honestly did not quite understand the definition of cluster distance on page 26 of pr-lecture3.pdf,
+ * so I implemented two version of it, namely ClusterAnalysis::dunnIndex::minClusterDistanceLecture (which is what I
+ * interpreted from the lecture) and ClusterAnalysis:dunnIndex::minClusterDistance (which is what I find more
+ * reasonable).
+ *
+ *
+ * p.s: I apologize for writing this in C++, I regret this and I will never do it again.
+ *
  *
  */
 
@@ -151,7 +163,6 @@ int main(int argc, char* argv[]) {
      * Clustering
      */
     int replacements = 0;
-    std::cout << "clustering ..." << std::endl;
 
     do {
         for (ClusterCenter clusterCenter : clusterCenters)
@@ -163,17 +174,15 @@ int main(int argc, char* argv[]) {
 
     } while (biggestRepDelta(clusterCenters) > repositionDeltaLimit);
 
-    std::cout << "needed iterations: " << replacements << "\ncluster quality analysis ..." << std::endl;
-
     using namespace ClusterAnalysis;
-    float dunnIndex = dunnIndex::analyze(samples, k);
-    //float DB = davisBouldinIndex::analyze(samples, &clusterCenters);
+    float dunnIndex = dunnIndex::analyze(samples, &clusterCenters);
+    float DB = davisBouldinIndex::analyze(samples, &clusterCenters);
 
     std::cout << "k : " << k << std::endl;
-    std::cout << "stop criterion, minimum reposition delta of : " << (unsigned)repositionDeltaLimit << std::endl;
+    std::cout << "stop criterion, minimum reposition delta of : " << repositionDeltaLimit << std::endl;
     std::cout << "total cluster center replacements : " << replacements << std::endl;
     std::cout << "Dunn Index : " << dunnIndex << std::endl;
-    //std::cout <<  "Davis-Boulden Index : " << DB << std::endl;
+    std::cout <<  "Davis-Boulden Index : " << DB << std::endl;
 
     delete (samples);
     return 0;

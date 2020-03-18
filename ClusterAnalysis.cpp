@@ -114,14 +114,14 @@ namespace ClusterAnalysis {
          * @param clusteredSamples
          * @return smallest diameter
          */
-        float minDiameter(std::vector<std::vector<TrainSample> *> *clusteredSamples) {
+        float maxDiameter(std::vector<std::vector<TrainSample> *> *clusteredSamples) {
             std::vector<float> diameters;
             diameters.reserve(clusteredSamples->size());
 
             for (auto list : *clusteredSamples)
                 diameters.push_back(computeDiameter(list));
 
-            return min(&diameters);
+            return max(&diameters);
         }
 
         /**
@@ -148,8 +148,7 @@ namespace ClusterAnalysis {
          * @param clusters
          * @return smallest cluster distance
          */
-        float minClusterDistance(std::vector<std::vector<TrainSample> *> *clusters) {
-
+        float minClusterDistanceLecture(std::vector<std::vector<TrainSample> *> *clusters) {
             std::vector<float> distances;
             distances.reserve(clusters->size());
 
@@ -160,22 +159,33 @@ namespace ClusterAnalysis {
             return min(&distances);
         }
 
+        float minClusterDistance(std::vector<ClusterCenter> *clusters) {
+            std::vector<float> distances;
+
+            for(int i = 0; i < clusters->size(); i++)
+                for(int j = i + 1; j < clusters->size(); j++)
+                    distances.push_back(distance(clusters->at(i).getValues(), clusters->at(j).getValues()));
+
+
+
+            return min(&distances);
+        }
+
         /**
-         * comutes Dunn-Index
+         * computes Dunn-Index
          * @param training samples
          * @param k number of clusters
          * @return Dunn-Index
          */
-        float analyze(std::vector<TrainSample> *trainSamples, uint8_t k) {
+        float analyze(std::vector<TrainSample> *trainSamples, std::vector<ClusterCenter>* clusters) {
 
+            std::vector<std::vector<TrainSample> *> *clusteredSamples = splitSamples(trainSamples, clusters->size());
 
-            std::vector<std::vector<TrainSample> *> *clusteredSamples = splitSamples(trainSamples, k);
-
-            float maxDiameter = minDiameter(clusteredSamples),
-                    minClusterDis = minClusterDistance(clusteredSamples);
+            float maxDiam = maxDiameter(clusteredSamples),
+                    minClusterDis = minClusterDistance(clusters);
 
             delete (clusteredSamples);
-            return minClusterDis / maxDiameter;
+            return minClusterDis / maxDiam;
         }
     }
 
