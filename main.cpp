@@ -106,12 +106,14 @@ void repositionCenters(std::vector<ClusterCenter> *clusterCenters, std::vector<T
         }
 
         // compute mean values
-        if (nearestSamplesCount > 0) {
+        if (nearestSamplesCount > 0)
             for (int index = 0; index < meanPosition->size(); index++)
                 (*meanPosition)[index] = (*meanPosition)[index] / nearestSamplesCount;
 
-            clusterIterator->reposition(meanPosition);
-        }
+
+        // puts is to zero if no samples are assigned to cluster center
+        clusterIterator->reposition(meanPosition);
+
     }
 }
 
@@ -172,7 +174,7 @@ int main(int argc, char* argv[]) {
         resetSamplesAttributes(samples);
         replacements++;
 
-    } while (biggestRepDelta(clusterCenters) > repositionDeltaLimit);
+    } while (  biggestRepDelta(clusterCenters) > repositionDeltaLimit);
 
     using namespace ClusterAnalysis;
     float dunnIndex = dunnIndex::analyze(samples, &clusterCenters);
